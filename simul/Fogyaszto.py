@@ -9,8 +9,6 @@ class Fogyaszto:
     """
     Fogyasztó osztály, ebből származnak majd a konkrét fogyasztók, pl Fix
     """
-    IdSeq = 0       # Innen tép ID-t
-
     id: int         # Fogyasztó azonosítója
     nev: str        # Fogyasztó neve
     telj: float     # Teljesítménye, mondjuk W
@@ -19,9 +17,8 @@ class Fogyaszto:
     uzVeg: int      # Üzemidő vége, 0:00:00:00..(23*3600+59*60+59):23:59:59
     uzLi: List[Tuple[int,int]] # Lista az üzemelési időszakokról.
 
-    def __init__(self, nev: str, telj: float, szoras: float, uzKezd: int, uzVeg: int):
-        self.id = self.IdSeq
-        self.IdSeq += 1
+    def __init__(self, id: int, nev: str, telj: float, szoras: float, uzKezd: int, uzVeg: int):
+        self.id = id
         self.nev = nev
         self.telj = telj
         self.szoras = szoras

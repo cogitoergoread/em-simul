@@ -12,6 +12,12 @@ class TestEvent(TestCase):
         self.assertTrue(self.e1 == simul.Event(1,1,1,1.0))
         self.assertFalse(self.e1 == self.e2)
 
+    def test_eqeq(self):
+        self.assertTrue(self.e1.eq(self.e1))
+        self.assertFalse(self.e1.eq(simul.Event(1,1,1,1.0)))
+        self.assertTrue(self.e1.eq(simul.Event(1,0,0,0.0)))
+        self.assertFalse(self.e1.eq(self.e2))
+
     def test_gt(self):
         self.assertFalse(self.e1 < self.e1)
         self.assertTrue(self.e1 < self.e2)

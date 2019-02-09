@@ -30,6 +30,11 @@ class Event:
             return self.timestamp == other.timestamp
         return False
 
+    def eq(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
+
     def __lt__(self, other):
         if type(other) is type(self):
             return self.timestamp < other.timestamp
