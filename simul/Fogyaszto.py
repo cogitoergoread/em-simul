@@ -1,6 +1,6 @@
 """Szimulációban a fogyasztókat reprezentáló osztályok"""
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import simul
 
@@ -26,13 +26,13 @@ class Fogyaszto:
         self.uzVeg = uzVeg
         self.uzLi = [(uzKezd, uzVeg)]
 
-    def getDta(self, timeStart: float, timeEnd: float) -> Tuple[float, List[simul.Event]]:
+    def getDta(self, timeStart: int, timeEnd: int) -> Tuple[float, List[simul.Event]]:
         """
         Egy időszakra visszaadja az ahhoz tartozó fogyasztási és esmény adatokat
         :param timeStart: Időszak kezdete
-        :type timeStart: float
+        :type timeStart: int
         :param timeEnd: Időszak vége
-        :type timeEnd: float
+        :type timeEnd: int
         :return: fogyasztás és esemény lista
         :rtype: Tuple[float, List[Event]]
         """
@@ -48,3 +48,83 @@ class Fogyaszto:
                 if (idoveg >= timeStart) and (idoveg <= timeEnd):
                     eventLi.append(simul.Event(idoveg, simul.EventType.ESEMENY, self.id, 0))
         return (fogyasztas, eventLi)
+
+class Mero:
+    """
+    Fő vagy almérőt szimulál.
+    Listája van az alá tartozó fogyasztókról
+    """
+    fogyasztok: List[int]
+    id: int
+    nev: str
+
+    def __init__(self, id: int, nev: str, fogyasztok: List[int]):
+        """
+        Eltárolja az alá tartozó fogyasztó IDket.
+        :param fogyasztok: Fogyasztó IDk
+        :type fogyasztok: List[int]
+        """
+        self.id = id
+        self.nev = nev
+        self.fogyasztok = list()
+        self.fogyasztok.append(fogyasztok)
+
+    def getAlhalozatiFOgyasztas(self, ossFogyasztas: Dict[int, float]) -> float:
+        """
+        Megadja az alhálózat fogyasztását
+        :param ossFogyasztas: Minden fogyasztó fogyasztása
+        :type ossFogyasztas: Dict[int, float]
+        :return: Az alháló össz fogyasztása
+        :rtype: float
+        """
+        ossz = 0.0
+        for fogyaszto in self.fogyasztok:
+            ossz += ossFogyasztas[fogyaszto]
+        return ossz
+
+class Halozat:
+    """
+    A hálózatban fogyasztók és mérők vannak.
+    Egy intervllumra rögzít méréseket, és végigiterál a napon is.
+    """
+    fogyasztok: List[Fogyaszto]
+    merok: List[Mero]
+    recorder: simul.Record
+
+    def __init__(self, recorder: simul.Record):
+        self.fogyasztok = list()
+        self.merok = list()
+        self.recorder = recorder
+
+    def getMeasDta(self, timeStart: int, timeEnd: int):
+        """
+        Egy intervallumra logba írja az adatokat
+        :param timeStart: Időszak kezdete
+        :type timeStart: int
+        :param timeEnd: Időszak vége
+        :type timeEnd: int
+        """
+        fogyasztasok = dict()
+        for fogyaszto in self.fogyasztok:
+            (value, evli) = fogyaszto.getDta(timeStart, timeEnd)
+            map(self.recorder.log, evli)
+            fogyasztasok[fogyaszto.id] = value
+        for mero in self.merok:
+            self.recorder.log(simul.Event(timeEnd,
+                                          simul.EventType.MERES,
+                                          mero.id,
+                                          mero.getAlhalozatiFOgyasztas(fogyasztasok)))
+
+    def iterateOverDay(self, tickIntervel: int):
+        """
+        Végigmászik a napon, és megkérdez minden intervallumra értékeket
+        :param tickIntervel: Ennyi másodpercenként mér.
+        :type tickIntervel: int
+        """
+        startTime = 0
+        lengthOfDay = 23*3600 + 59*60 + 59
+
+        while startTime < lengthOfDay:
+            self.getMeasDta(startTime,
+                            min(lengthOfDay, startTime + tickIntervel -1))
+            startTime += tickIntervel
