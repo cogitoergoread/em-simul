@@ -2,7 +2,7 @@
 import random
 from typing import List, Tuple
 
-from simul.SimLog import Event, EventType
+import simul
 
 
 class Fogyaszto:
@@ -29,7 +29,7 @@ class Fogyaszto:
         self.uzVeg = uzVeg
         self.uzLi = [(uzKezd, uzVeg)]
 
-    def getDta(self, timeStart: float, timeEnd: float) -> Tuple[float, List[Event]]:
+    def getDta(self, timeStart: float, timeEnd: float) -> Tuple[float, List[simul.Event]]:
         """
         Egy időszakra visszaadja az ahhoz tartozó fogyasztási és esmény adatokat
         :param timeStart: Időszak kezdete
@@ -44,9 +44,10 @@ class Fogyaszto:
         for idokezd, idoveg in self.uzLi:
             if (idokezd < timeEnd) and (idoveg > timeStart):
                 # Kell foglalkozni az időszakkal
-                fogyasztas += (idoveg - idokezd) / 3600 * random.gauss(self.telj, self.szoras)
+                fogyasztas += ( min(idoveg, timeEnd) - max(idokezd, timeStart) + 1) / 3600\
+                              * random.gauss(self.telj, self.szoras)
                 if (idokezd >= timeStart) and (idokezd <= timeEnd):
-                    eventLi.append(Event(idokezd, EventType.ESEMENY, self.id, 1))
+                    eventLi.append(simul.Event(idokezd, simul.EventType.ESEMENY, self.id, 1))
                 if (idoveg >= timeStart) and (idoveg <= timeEnd):
-                    eventLi.append(Event(idoveg, EventType.ESEMENY, self.id, 0))
+                    eventLi.append(simul.Event(idoveg, simul.EventType.ESEMENY, self.id, 0))
         return (fogyasztas, eventLi)

@@ -59,6 +59,6 @@ class Record:
         self.logok.append(event)
 
     def write(self, filename: str):
-        sort(self.logok)
+        self.logok.sort()
         with open(filename, 'w', encoding="utf-8") as file:
             json.dump(self.logok, file, cls=EventEncoder)
