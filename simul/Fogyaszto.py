@@ -49,6 +49,48 @@ class Fogyaszto:
                     eventLi.append(simul.Event(idoveg, simul.EventType.ESEMENY, self.id, 0.0))
         return (fogyasztas, eventLi)
 
+
+class CiklikusFogyaszto(Fogyaszto):
+    """Bekapcsolt időszakában be / ki periódusok ismétlődnek"""
+
+    def __init__(self, id: int, nev: str, telj: float, szoras: float, uzKezd: int, uzVeg: int,
+                 beHossz: int, beSzoras: int, kiHossz: int, kiSzoras: int):
+        super().__init__(id, nev, telj, szoras, uzKezd, uzVeg)
+        # Üzemelési listában random intervallumok lesznek
+        self.uzLi.clear()
+        idoKezd = uzKezd
+        while idoKezd < uzVeg:
+            # Olyan Int legyen, hogy a kkapcs még beférjen
+            beVege = min(idoKezd + simul.Ido.getRandIntLen(beHossz, beSzoras),
+                         uzVeg - 2)
+            kiKezd = beVege + 1
+            kiVege = min(kiKezd + simul.Ido.getRandIntLen(kiHossz, kiSzoras),
+                         uzVeg)
+            self.uzLi.append((idoKezd, beVege))
+
+            idoKezd = kiVege + 1
+
+
+class SpotFogyaszto(Fogyaszto):
+    """Bekapcsolt időszakában néhányszor be van kapcsolva véletlen hosszú időre"""
+
+    def __init__(self, id: int, nev: str, telj: float, szoras: float, uzKezd: int, uzVeg: int,
+                 beHossz: int, beSzoras: int, beDb: int):
+        super().__init__(id, nev, telj, szoras, uzKezd, uzVeg)
+        # Üzemelési listában random intervallumok lesznek
+        self.uzLi.clear()
+        for _ in range(beDb):
+            beKezd = random.randrange(uzKezd, uzVeg)
+            beVeg = simul.Ido.getRandIntLen(beHossz, beSzoras)
+            utkozik = False
+            for (kezd, veg) in self.uzLi:
+                # Ha metszók, kidobjuk. Metsző, ha az int kezdetét tartalmazza a másik
+                if (((kezd <= beKezd) and (beKezd <= veg))
+                        or ((beKezd <= kezd) and (kezd <= beVeg))):
+                    utkozik = True
+            if not utkozik:
+                self.uzLi.append((beKezd, beVeg))
+
 class Mero:
     """
     Fő vagy almérőt szimulál.
