@@ -22,6 +22,14 @@ class TestEvent(TestCase):
         self.assertFalse(self.e1 < self.e1)
         self.assertTrue(self.e1 < self.e2)
 
+    def test_str(self):
+        self.assertEqual("(00:00:01,Esemény,0,0.0)", self.e1.__str__())
+        self.assertEqual("(00:00:02,Mérés,1,1.0)", self.e2.__str__())
+
+    def test_repr(self):
+        self.assertEqual("Event(Time:00:00:01,Eset:Esemény,Id:0,Érték:0.0)", self.e1.__repr__())
+        self.assertEqual("Event(Time:00:00:02,Eset:Mérés,Id:1,Érték:1.0)", self.e2.__repr__())
+
 class TestRecord(TestCase):
     def setUp(self):
         self.e1 = simul.Event(1,0,0,0.0)

@@ -67,7 +67,7 @@ class Mero:
         self.id = id
         self.nev = nev
         self.fogyasztok = list()
-        self.fogyasztok.append(fogyasztok)
+        self.fogyasztok += fogyasztok
 
     def getAlhalozatiFOgyasztas(self, ossFogyasztas: Dict[int, float]) -> float:
         """
@@ -107,7 +107,8 @@ class Halozat:
         fogyasztasok = dict()
         for fogyaszto in self.fogyasztok:
             (value, evli) = fogyaszto.getDta(timeStart, timeEnd)
-            map(self.recorder.log, evli)
+            for event in evli:
+                self.recorder.log(event)
             fogyasztasok[fogyaszto.id] = value
         for mero in self.merok:
             self.recorder.log(simul.Event(timeEnd,

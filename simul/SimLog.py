@@ -3,6 +3,7 @@ from enum import unique, IntEnum
 from functools import total_ordering
 from typing import List, Tuple
 import json
+import simul
 
 @unique
 class EventType(IntEnum):
@@ -40,6 +41,17 @@ class Event:
             return self.timestamp < other.timestamp
         return NotImplemented
 
+    def __str__(self):
+        return "({},{},{},{})".format(simul.Ido.getStr(self.timestamp),
+                                      "Esemény" if self.event == EventType.ESEMENY else "Mérés",
+                                      self.mid,
+                                      self.value)
+
+    def __repr__(self):
+        return "Event(Time:{},Eset:{},Id:{},Érték:{})".format(simul.Ido.getStr(self.timestamp),
+                                      "Esemény" if self.event == EventType.ESEMENY else "Mérés",
+                                      self.mid,
+                                      self.value)
 
 class EventEncoder(json.JSONEncoder):
      def default(self, obj):
