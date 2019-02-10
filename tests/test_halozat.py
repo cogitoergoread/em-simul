@@ -31,3 +31,4 @@ class TestHalozat(TestCase):
                                     simul.EventType.MERES, 1, 12400).eq( self.rec.logok[6])) # Főmérő
         self.assertTrue(simul.Event(simul.Ido.getSec(23,59,59),
                                     simul.EventType.MERES, 2, 400).eq( self.rec.logok[7])) # Almérő
+        self.rec.write("F:/tmp/log_s.json")

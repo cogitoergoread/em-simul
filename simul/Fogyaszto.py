@@ -44,9 +44,9 @@ class Fogyaszto:
                 fogyasztas += ( min(idoveg, timeEnd) - max(idokezd, timeStart) + 1) / 3600\
                               * random.gauss(self.telj, self.szoras)
                 if (idokezd >= timeStart) and (idokezd <= timeEnd):
-                    eventLi.append(simul.Event(idokezd, simul.EventType.ESEMENY, self.id, 1))
+                    eventLi.append(simul.Event(idokezd, simul.EventType.ESEMENY, self.id, 1.0))
                 if (idoveg >= timeStart) and (idoveg <= timeEnd):
-                    eventLi.append(simul.Event(idoveg, simul.EventType.ESEMENY, self.id, 0))
+                    eventLi.append(simul.Event(idoveg, simul.EventType.ESEMENY, self.id, 0.0))
         return (fogyasztas, eventLi)
 
 class Mero:
