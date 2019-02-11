@@ -60,3 +60,14 @@ if __name__ == '__main__':
     # Szimuláció
     rubinHalo.iterateOverDay(15 * simul.Ido.PERC)
     rec.write("data/rubin-simul.json")
+
+    # Data dictionaries
+    fogyli = dict()
+    for fogyaszto in rubinHalo.fogyasztok:
+        fogyli[fogyaszto.id] = fogyaszto.nev
+    print(fogyli)
+
+    meali = dict()
+    for mero in rubinHalo.merok:
+        meali[mero.id] = mero.nev
+    print(meali)
