@@ -9,7 +9,6 @@ Out [Description]
 
 import sys
 import json
-import simul
 import logging
 
 # Set logging
@@ -21,9 +20,19 @@ measdict = {1: 'Főmérő', 2: 'Szerver', 3: 'Adminn'}
 
 if __name__ == '__main__':
     # Process the JSON from STDIN
-    data_rec = json.load(sys.stdin)
+    mearec = json.load(sys.stdin)
     logging.debug('Incoming')
-    logging.debug(data_rec)
+    logging.debug(mearec)
 
     # Build up description string
-    print(data_rec)
+    (timestamp, event, mid, value) = mearec[0], mearec[1], mearec[2], mearec[3]
+    descr = ""
+    if event == 0:
+        descr = fogydict[mid]
+        if value == 1:
+            descr += " bekapcsolás"
+        else:
+            descr += " kikapcsolás"
+    else:
+        descr = "{} mérés {} W".format(measdict[mid], value)
+    print(descr)
