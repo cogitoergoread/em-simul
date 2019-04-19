@@ -71,3 +71,8 @@ if __name__ == '__main__':
     for mero in rubinHalo.merok:
         meali[mero.id] = mero.nev
     print(meali)
+
+    # MQTT Publikáció
+    mqp = simul.MqttPublish()
+    mqp.publish(rec)
+    mqp.close()
