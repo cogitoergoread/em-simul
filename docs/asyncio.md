@@ -10,3 +10,10 @@ Legyen egy egyszerű WebSocket szerver, valahány másodpercenként kiköp valam
 
 Legyen hozzá eg kliens, amelyik hallgat végtelen ciklusban a Websocketen és kiirkálja az eredményt.
 
+# AH LORA
+
+Értelmezni kell a Forati adat struktúrát.
+
+Port mondja meg, hogy néz ki az adat. Port bitjei definiálják, van-e adott pár byte blokk.
+
+Ezt kell dekódolni a Hexa stringgé alakított byte folyamból.
