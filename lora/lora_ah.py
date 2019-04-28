@@ -5,6 +5,7 @@ try:
 except ImportError:
     import _thread as thread
 import datetime
+import time
 import json
 import lora
 import paho.mqtt.client as mqtt
@@ -51,6 +52,13 @@ def on_close(ws):
 
 def on_open(ws):
     print('OnOpen...')
+
+    def run(*args):
+        time.sleep(5 * 60 - 3)  # Run for 04:57
+        print("thread terminating...")
+        ws.close()
+
+    thread.start_new_thread(run, ())
 
 
 if __name__ == "__main__":
