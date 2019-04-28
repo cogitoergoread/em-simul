@@ -6,18 +6,39 @@ except ImportError:
     import _thread as thread
 import datetime
 import json
+import lora
+import paho.mqtt.client as mqtt
 
+
+class MqttSettings:
+    MQTT_HOST = "tick.rubin.hu"
+    MQTT_PORT = 1883
+    MQTT_KEEPALIVE_INTERVAL = 45
+    MQTT_CHANNEL = "ahlora"
 
 def on_message(ws, message):
     print(message)
-    lora = json.loads(message)
-    port = lora["port"]
-    data = lora["data"]
-    ts = lora["ts"]
+    loraMsg = json.loads(message)
+    port = loraMsg["port"]
+    data = loraMsg["data"]
+    ts = loraMsg["ts"]
     time = datetime.datetime.fromtimestamp(ts // 1000)
     timeStr = time.strftime('%Y-%m-%dT%H:%M:%S')
-    eui = lora["EUI"]
-    print("Lora, Device:{}, Time:{}, Port:{}, Data:{}".format(eui, timeStr, port, data))
+    eui = loraMsg["EUI"]
+    if loraMsg["cmd"] == "rx":
+        dict_msg = lora.Decoder.data_to_dict(data, port)
+        dict_msg["pod_name"] = eui
+        dict_msg["timestamp"] = timeStr
+        msg = json.dumps(dict_msg)
+        print('Lora Rx, MQTT,MSG:{}'.format(msg))
+        mqttc = mqtt.Client()
+        mqttc.connect(MqttSettings.MQTT_HOST, MqttSettings.MQTT_PORT, MqttSettings.MQTT_KEEPALIVE_INTERVAL)
+        mqttc.publish(MqttSettings.MQTT_CHANNEL, msg)
+        mqttc.disconnect()
+
+    else:
+        print("Lora GW, Device:{}, Time:{}, Port:{}, Data:{}".format(eui, timeStr, port, data))
+
 
 
 def on_error(ws, error):
