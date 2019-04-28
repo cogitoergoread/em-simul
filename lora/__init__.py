@@ -1,1 +1,1 @@
-from .decoder import SensorType, Decoder
+from .decoder import SensorType, Decoder, DataType
