@@ -48,6 +48,7 @@ class DcSettings:
     MQTT_PORT = 1883
     MQTT_KEEPALIVE_INTERVAL = 45
     MQTT_CHANNEL = "dc"
+    MQTT_CHANNEL_VAL = "vdc"
     DC_PORT = 2123
     POD_LIST = [
         {'pod': 'Modbus Brutál szerever - Áram Max', 'sc': 1000010012, 'ch': 5, 'off': 0, 'mul': 1000, 'unit': 'A'},
@@ -152,6 +153,7 @@ class DcToMQ:
                                                                                                    dcTimePrev))
             dcDiPrev = r.json()
 
+
             # Impulse value actual and previous
             impAct = dcDiAct['output']['value']
             impPrev = dcDiPrev['measureValue']['value']
@@ -161,39 +163,84 @@ class DcToMQ:
                         "timestamp": dcTime,
                         "imp_count": impAct,
                         "imp_delta": impAct - impPrev}
+            vdict_msg = {"pod_name": podDi['pod'],
+                         "timestamp": dcTime,
+                         "imp_count": impAct,
+                         "imp_delta": impAct - impPrev}
+            vdict2_msg = {"pod_name": podDi['pod'],
+                          "timestamp": dcTime,
+                          "imp_count": impAct,
+                          "imp_delta": impAct - impPrev}
 
+            value, value2 = None, None
             # Measurement value calculation based on unit
             if podDi['unit'] == DcSettings.MEA_UNIT_CURR:
                 # Unit is current, value is (act-prev) / mul
-                dict_msg["current"] = (impAct - impPrev) / podDi['mul']
+                value = (impAct - impPrev) / podDi['mul']
+                dict_msg["current"] = value
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "current"
             elif podDi['unit'] == DcSettings.MEA_UNIT_TEMP:
                 # Unit is temperature, value is (act-prev) / mul - offs
-                dict_msg["temperature"] = (impAct - impPrev) / podDi['mul'] - podDi['off']
+                value = (impAct - impPrev) / podDi['mul'] - podDi['off']
+                dict_msg["temperature"] = value
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "temperature"
             elif podDi['unit'] == DcSettings.MEA_UNIT_GAS:
                 # Unit is m3, gas consumption a meter
-                dict_msg["gas_cons"] = (impAct - impPrev) / podDi['mul']
-                dict_msg["gas_meter"] = impAct / podDi['mul']
+                value = (impAct - impPrev) / podDi['mul']
+                value2 = impAct / podDi['mul']
+                dict_msg["gas_cons"] = value
+                dict_msg["gas_meter"] = value2
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "gas_cons"
+                vdict2_msg['value'] = value2
+                vdict2_msg['meas_typ'] = "gas_meter"
             elif podDi['unit'] == DcSettings.MEA_UNIT_HEAT:
                 # Unit is MWh, Heat consumption
-                dict_msg["heat_cons"] = (impAct - impPrev) / podDi['mul']
-                dict_msg["heat_meter"] = impAct / podDi['mul']
+                value = (impAct - impPrev) / podDi['mul']
+                value2 = impAct / podDi['mul']
+                dict_msg["heat_cons"] = value
+                dict_msg["heat_meter"] = value2
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "heat_cons"
+                vdict2_msg['value'] = value2
+                vdict2_msg['meas_typ'] = "heat_meter"
             elif podDi['unit'] == DcSettings.MEA_UNIT_CONS:
                 # Unit is kWh, Electrical consumption
-                dict_msg["elec_cons"] = (impAct - impPrev) / podDi['mul']
-                dict_msg["elec_meter"] = impAct / podDi['mul']
+                value = (impAct - impPrev) / podDi['mul']
+                value2 = impAct / podDi['mul']
+                dict_msg["elec_cons"] = value
+                dict_msg["elec_meter"] = value2
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "elec_cons"
+                vdict2_msg['value'] = value2
+                vdict2_msg['meas_typ'] = "elec_meter"
             elif podDi['unit'] == DcSettings.MEA_UNIT_REAC:
                 # Unit is kWh, Electrical reactive consumption
-                dict_msg["reac_cons"] = (impAct - impPrev) / podDi['mul']
-                dict_msg["rec_meter"] = impAct / podDi['mul']
+                value = (impAct - impPrev) / podDi['mul']
+                value2 = impAct / podDi['mul']
+                dict_msg["reac_cons"] = value
+                dict_msg["rec_meter"] = value2
+                vdict_msg['value'] = value
+                vdict_msg['meas_typ'] = "reac_cons"
+                vdict2_msg['value'] = value2
+                vdict2_msg['meas_typ'] = "rec_meter"
             else:
                 # No unit is recogmised
                 pass
 
             msg = json.dumps(dict_msg)
             print(msg)
+            msgv = json.dumps(vdict_msg)
+            print(msgv)
             self.mqttc = mqtt.Client()
             self.mqttc.connect(DcSettings.MQTT_HOST, DcSettings.MQTT_PORT, DcSettings.MQTT_KEEPALIVE_INTERVAL)
             self.mqttc.publish(DcSettings.MQTT_CHANNEL, msg)
+            self.mqttc.publish(DcSettings.MQTT_CHANNEL_VAL, msgv)
+            if value2 is not None:
+                msgv = json.dumps(vdict2_msg)
+                self.mqttc.publish(DcSettings.MQTT_CHANNEL_VAL, msgv)
             self.mqttc.disconnect()
 
 if __name__ == '__main__':
